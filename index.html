@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"
+        integrity="sha512-wBcFatf7yQavHQWtf4ZEjvtVz4XkYISO96hzvejfh18tn3OrJ3sPBppH0B6q/1SHB4OKHaNNUKqOmsiTGlOM/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <meta itemprop="name" content="Strains">
+    <meta charset="utf-8">
+    <style>
+        #drop {
+            width: 350px;
+            height: 70px;
+            padding: 10px;
+            border: 3px solid #000;
+            text-align: center;
+            vertical-align: center;
+        }
+
+        #table {
+            border: 1px solid #000;
+            border-collapse: collapse;
+            margin: 10px;
+        }
+
+        td {
+            border: 1px solid #000;
+        }
+
+        body {
+            font-family: sans-serif;
+        }
+    </style>
+    <script>
+        var filters = []
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function setFilters() {
+            let trs = document.querySelectorAll("tr");
+            let tds = trs[0].querySelectorAll("td")
+            let filterForm = document.getElementById('filter_form')
+            filters = []
+            let i = 0;
+            tds.forEach((td) => {
+                filterForm.insertAdjacentHTML(
+                    'beforeend',
+                    `<label for="${td.textContent}">Filter by ${td.textContent}:</label><br><input type="text" id="${td.textContent}" name="${td.textContent}" value=""><br>`
+                );
+                filters.push(
+                    {
+                        field_id: td.textContent,
+                        column_index: i,
+                        value: '',
+                        value_list: []
+                    }
+                )
+                i += 1
+            })
+            filterForm.insertAdjacentHTML(
+                'beforeend', '<br><input type="submit" value="Filter">'
+            )
+
+        }
+
+        function handleDrop(e) {
+            e.stopPropagation(); e.preventDefault();
+            new Promise(() => {
+                let files = e.dataTransfer.files, f = files[0];
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    let data = new Uint8Array(e.target.result);
+                    let workbook = XLSX.read(data, { type: 'array' });
+                    let worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    let container = document.getElementById('table');
+
+                    container.innerHTML = XLSX.utils.sheet_to_html(worksheet);
+                    let trs = document.querySelectorAll("tr");
+                    setFilters()
+                }
+
+                // console.log(workbook);
+                reader.readAsArrayBuffer(f);
+            });
+        }
+
+        function filterTable() {
+            new Promise(() => {
+
+                let container = document.getElementById('table');
+
+                filters.forEach((f) => {
+                    f.value = document.getElementById(f.field_id).value.toUpperCase();
+                    f.value_list = f.value.split(" ");
+                })
+
+                // Unset the display
+                let trs = document.querySelectorAll("tr");
+
+                trs.forEach(tr => {
+                    let tds = tr.querySelectorAll("td");
+
+                    let all_filters_passed = filters.every((f) => {
+                        let passes_filter = f.value == "" || f.value_list.every(el => tds[f.column_index].textContent.toUpperCase().includes(el));
+                        if (!passes_filter) {
+                            tr.style.display = 'none';
+                            return false;
+                        }
+                        return true
+                    })
+                    if (all_filters_passed) { tr.style.display = '' }
+                });
+                // First one always visible
+                trs[0].style.display = '';
+            });
+        }
+
+    </script>
+
+</head>
+
+<body>
+    <div id="drop" onDrop="handleDrop(event)" ondragover="allowDrop(event)">Drop the file here</div>
+    <form id="filter_form" action="javascript:void(0);" onsubmit="filterTable()">
+    </form>
+    <table id="table"></table>
+</body>
+
+</html>
