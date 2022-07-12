@@ -30,6 +30,19 @@
         body {
             font-family: sans-serif;
         }
+
+        div.filter {
+            padding-right: 20px;
+            margin-top: 20px;
+        }
+
+        form {
+            display: flex;
+            width: 900px;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-content: space-between;
+        }
     </style>
     <script>
         var filters = []
@@ -50,7 +63,7 @@
                 }
                 filterForm.insertAdjacentHTML(
                     'beforeend',
-                    `<label for="${td.textContent}">Filter by ${td.textContent}:</label><br><input type="text" id="${td.textContent}" name="${td.textContent}" value=""><br>`
+                    `<div class="filter"><label for="${td.textContent}">Filter by ${td.textContent}:</label><br><input type="text" id="${td.textContent}" name="${td.textContent}" value=""></div>`
                 );
                 filters.push(
                     {
@@ -63,7 +76,7 @@
                 i += 1
             })
             filterForm.insertAdjacentHTML(
-                'beforeend', '<br><input type="submit" value="Filter">'
+                'beforeend', '<input type="submit" value="Filter">'
             )
 
         }
