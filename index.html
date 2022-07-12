@@ -44,6 +44,10 @@
             filters = []
             let i = 0;
             tds.forEach((td) => {
+                console.log(td.textContent)
+                if (td.textContent.replace(/^\s+|\s+$/g, '').length === 0) {
+                    return
+                }
                 filterForm.insertAdjacentHTML(
                     'beforeend',
                     `<label for="${td.textContent}">Filter by ${td.textContent}:</label><br><input type="text" id="${td.textContent}" name="${td.textContent}" value=""><br>`
